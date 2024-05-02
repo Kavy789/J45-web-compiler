@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Custom Compiler</title>
+  <style> 
+    body {
+      background-color: #0d101e;
+    }
+    #editor::placeholder {
+      color: black;
+    }
+    #editor { 
+      width: 100%; 
+      height: 200px; 
+      font-family: monospace; 
+      font-size: 10px; 
+      background-color: grey;
+    } 
+    #output {
+  margin-top: 10px;
+  font-family: monospace;
+  font-size: 10px;
+  color: white;
+  border: 1px solid white;
+  padding: 10px;
+  height: 100px;
+}
+
+    #copyright {
+  font-size: 5px;
+  position: fixed;
+  bottom: 0px;
+  width: 100%;
+  color: white;
+}
+
+.logo-container {
+    width: 200px;
+    height: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(to bottom, green, cyan);
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+}
+
+.letter {
+    font-size: 48px;
+    font-weight: bold;
+     background: -webkit-linear-gradient(45deg, red, orange, yellow);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  animation: assemble 2s forwards;
+  opacity: 0;
+}
+
+@keyframes assemble {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    50% {
+        opacity: 0.5;
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.letter:nth-child(1) {
+    animation-delay: 0.2s;
+}
+
+.letter:nth-child(2) {
+    animation-delay: 0.4s;
+}
+
+.letter:nth-child(3) {
+    animation-delay: 0.6s;
+}
+
+    #run {
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 10px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 1s ease;
+}
+
+#run:hover {
+  background-color: #45a049;
+}
+#sidebar {
+    height: 100%;
+    width: 0;
+    position: fixed;
+    top: 0;
+    right: 0;
+    background-color: #f1f1f1;
+    overflow-x: hidden;
+    transition: 0.5s;
+    padding-top: 60px;
+    z-index: 1;
+}
+
+#sidebar-content {
+    padding: 10px;
+}
+
+#close-btn {
+    position: absolute;
+    top: 0;
+    right: 25px;
+    font-size: 36px;
+    margin-left: 50px;
+    cursor: pointer;
+}
+
+#main {
+    transition: margin-right .5s;
+    padding: 16px;
+}
+
+#toggle-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 5px;
+    z-index: 2;
+}
+
+#chatbox {
+    height: 300px;
+    overflow-y: scroll;
+    border: 1px solid #ccc;
+    padding: 10px;
+}
+    #line2 {
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 10px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+#line2:hover {
+  background-color: #45a049;
+}
+    #lineNumber {
+  width: 80px;
+  height: 40px;
+  padding: 10px;
+  border: 2px solid #4CAF50;
+  border-radius: 8px;
+  font-size: 16px;
+  color: #333;
+  background-color: #f8f8f8;
+  transition: border-color 0.3s ease;
+      placeholder-color: #4CAF50;
+}
+
+#lineNumber:focus {
+border-color: #45a049;
+  outline: none;
+  box-shadow: 0 0 5px rgba(68, 170, 73, 0.5);
+}
+
+  </style>
+</head>
+<body>
+    <button id="toggle-btn" onclick="toggleSidebar()">Chat</button>
+
+    <div id="sidebar">
+        <div id="close-btn" onclick="closeSidebar()">&times;</div>
+        <div id="sidebar-content">
+            <h2>Chat with AI</h2>
+            <div id="chatbox"></div>
+            <input type="text" id="userInput" placeholder="Type your message here...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+  <div class="logo-container">
+        <div id="j" class="letter">J</div>
+        <div id="4" class="letter">4</div>
+        <div id="5" class="letter">5</div>
+  </div>
+  <h2 style="color: white;"> Welcome to J45! </h2>
+  <h1 style="color:white;">Custom Compiler</h1>
+       <div id="line">
+    <button onclick="goToLine()" id="line2">Go to Line</button>
+<input type="number" id="lineNumber" placeholder="Line number">
+       </div>
+
+</head>
+    <div id="main">
+ <textarea id="editor" placeholder="Enter your J45 code here..."></textarea>
+        <button onclick="runCode()" id="run">Run J45 Code</button>
+    </div>
+  <div id="output"></div>
+  <footer id="copyright" style="color: white;">
+All copyrights © reserved for J45, 2024. This coding platform is made by Kavyant. <br>
+Special thanks to team members. <br>
+VERSION: Alpha-indev (0.0.2)<br>
+</footer> 
+  <script>
+    function display(text) {
+      const outputElement = document.getElementById('output');
+      const newDiv = document.createElement("div");
+      newDiv.textContent = text;
+      outputElement.appendChild(newDiv);
+    }
+
+    function runCode() {
+      const code = document.getElementById('editor').value;
+
+      document.getElementById('output').textContent = '';
+
+    try {
+        eval(code);
+      } catch (error) {
+        display('Error: ' + error.message);
+      }
+    }
+
+function highlightDisplay() {
+  const output = document.getElementById('output');
+  const code = output.innerHTML;
+  const lines = code.split('\n');
+
+  let indents = 0;
+  let indentedCode = '';
+
+  const openBraceRegex = /{/g;
+  const closeBraceRegex = /}/g;
+
+  lines.forEach(line => {
+    const openBraces = (line.match(openBraceRegex) || []).length;
+    const closeBraces = (line.match(closeBraceRegex) || []).length;
+
+    indents -= closeBraces;
+    for(let i = 0; i < indents; i++) {
+      indentedCode += '&nbsp;&nbsp;';
+    }
+
+    indentedCode += line + '<br>';
+
+    indents += openBraces;
+  });
+
+  output.innerHTML = indentedCode;
+}
+
+    
+    document.getElementById('editor').addEventListener('input', highlightDisplay);
+    function runCode() {
+  const code = document.getElementById('editor').value;
+
+  document.getElementById('output').textContent = '';
+
+  try {
+
+    eval(parseForLoop(code));
+  } catch (error) {
+    display('Error: ' + error.message);
+  }
+}
+
+function parseForLoop(code) {
+  const forLoopRegex = /for\[(.*?)\](.*?)endfor/gs;
+  
+  return code.replace(forLoopRegex, (match, condition, body) => {
+    const [initial, conditionExpr, update] = condition.split(',');
+    let loopCode = '';
+
+
+    loopCode += `for(let ${initial.trim()}; ${conditionExpr.trim()}; ${update.trim()}) {`;
+    loopCode += body.trim();
+loopCode += '}';
+
+    return loopCode;
+  });
+}
+
+function runCode() {
+  const code = document.getElementById('editor').value;
+
+  document.getElementById('output').textContent = '';
+
+  try {
+    eval(parseForLoop(code));
+  } catch (error) {
+    display('Error: ' + error.message);
+  }
+}
+    function parseTrigFunction(input) {
+    const trigRegex = /(sin|cos|tan|csc|cot|sec|log)\((\d+)\)/;
+    const match = input.match(trigRegex);
+    if (match) {
+        const func = match[1];
+        const angle = parseFloat(match[2]);
+        if (func === 'sin') {
+            return Math.sin(angle * Math.PI / 180);
+        } else if (func === 'cos') {
+            return Math.cos(angle * Math.PI / 180);
+        } else if (func === 'tan') {
+            return Math.tan(angle * Math.PI / 180);
+        } else if (func === 'csc') {
+            return 1 / Math.sin(angle * Math.PI / 180);
+        } else if (func === 'cot') {
+            return 1 / Math.tan(angle * Math.PI / 180);
+        } else if (func === 'sec') {
+            return 1 / Math.cos(angle * Math.PI / 180);
+        } 
+          else if (func === 'log'){ return Math.log(angle)       
+                                  }
+        else {
+            return 'Invalid function';
+        }
+    } else {
+        return 'Invalid input';
+    }
+ }
+
+
+
+function toggleSidebar() {
+    document.getElementById('sidebar').style.width = '250px';
+    document.getElementById('main').style.marginRight = '250px';
+}
+    function closeSidebar() {
+    document.getElementById('sidebar').style.width = '0';
+    document.getElementById('main').style.marginRight = '0';
+}
+
+function sendMessage() {
+    const userInput = document.getElementById('userInput').value;
+    displayMessage('User', userInput);
+
+    generateCode(userInput);
+}
+
+function generateCode(userInput) {
+    const codeMappings = {
+        'generate a for loop': 'for(let i = 0; i < 10; i++) {\n    // Code here\n}',
+        'generate a function': 'function myFunction() {\n    // Code here\n}',
+        'generate a conditional statement': 'x = 3 \nif (x == 3) {\n    display("The value of x is 3.")\n} else {\ndisplay("The value of x is not 3")\n}',
+    };
+
+    const generatedCode = codeMappings[userInput.toLowerCase()];
+    if (generatedCode) {
+        document.getElementById('editor').value = generatedCode;
+        displayMessage('AI', 'Code generated based on your request.');
+    } else {
+        displayMessage('AI', 'I cannot generate code for that request.');
+    }
+}
+    const code = document.getElementById('editor').value;
+
+function displayMessage(sender, message) {
+    const chatbox = document.getElementById('chatbox');
+    chatbox.innerHTML += '<p>' + sender + ': ' + message + '</p>';
+}
+
+    
+    const elem = document.getElementById('toggle-btn');
+elem.onclick = function() {
+  
+    elem.remove();
+    toggleSidebar();
+}
+    const elem2 = document.getElementById('close-btn');
+    elem2.onclick = function() {
+      elem2.remove();
+      closeSidebar();
+    }
+function figure(type, figure) {
+    let html = '';
+
+    if (type === "2d") {
+        html += `<svg width="200" height="200">`;
+        if (figure === "circle") {
+            html += `<circle cx="100" cy="100" r="50" fill="red" />`;
+} else if (figure === "rectangle") {
+            html += `<rect x="50" y="50" width="100" height="100" fill="blue" />`;
+        }
+        html += `</svg>`;
+    } else if (type === "3d") {
+        if (figure === "cube") {
+            html += `<div class="cube" style="width: 100px; height: 100px; depth: 100px; background-color: green;"></div>`;
+        } else if (figure === "sphere") {
+            html += `<div class="sphere" style="width: 100px; height: 100px; background-color: yellow; border-radius: 50%;"></div>`;
+        }
+    }
+
+    document.getElementById('output').innerHTML += html;
+}
+    
+  function match(x, y) {
+    if (x === null || y === null) {
+        return null;
+    } else {
+        return x === y;
+    }
+}
+
+function caseSwitch(expression, cases) {
+    for (let i = 0; i < cases.length; i++) {
+        const [caseValue, caseFunction] = cases[i];
+        if (expression === caseValue) {
+            return caseFunction();
+        }
+    }
+    return null;
+}
+function goToLine() {
+    const lineNumber = document.getElementById('lineNumber').value;
+    const editor = document.getElementById('editor');
+    
+    const lines = editor.value.split('\n');
+    const newPosition = calculateCursorPosition(lines, lineNumber);
+    editor.focus();
+    editor.setSelectionRange(newPosition, newPosition);
+}
+
+function calculateCursorPosition(lines, lineNumber) {
+    let position = 0;
+    for (let i = 0; i < lineNumber - 1; i++) {
+        position += lines[i].length + 1;
+    }
+    return position;
+}
+    document.getElementById('run').onclick = function(){
+      if(document.getElementById('editor').value === ""){
+        document.getElementById('output').innerHTML = "Please enter some code in the editor to run.";
+      }
+      else
+        runCode();
+    }
+function range(start, stop, step = 1) {
+    const result = [];
+    if (step === 0) {
+        throw new Error('Step cannot be zero');
+    }
+
+    if (start < stop && step < 0) {
+        throw new Error('Step must be positive if start is less than stop');
+    }
+
+    if (start > stop && step > 0) {
+        throw new Error('Step must be negative if start is greater than stop');
+    }
+
+    if (start < stop) {
+        for (let i = start; i < stop; i += step) {
+            result.push(i);
+        }
+    } else {
+        for (let i = start; i > stop; i += step) {
+            result.push(i);
+        }
+    }
+    return result;
+}
+
+</script>
+</body>
+</html>
